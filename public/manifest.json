@@ -1,7 +1,7 @@
 ﻿{
     "manifest_version": 3,
     "name": "Snap Goban",
-    "version": "3.0.13",
+    "version": "3.0.14",
     "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA9FQM3qgaVALId1f/V6d3XVnWm100JLf/haZrEUL78qPtq+HtafidDGaEgU1Cm3I+6bdqqGQhn68sT/NVchHfJnSRq5SeVJqC9JOCfwihhzh5liRKdy//84U63tI4SysxGpHqwSz3V2q97ZsFBD8lKdcL4YQdsaNW0+EkxrIXflKQcnhXC2AL6dxA0eOAkrCxWzJaaXPGaIAnC68hM3Zpw689bPfqLMsODrwh1IB9/77duBa//2tR0DvZqlGaThI5Pm0RpzEpKj2GgoW6o7jj29syhHJJhzKbI3L+hQox4x6YcjImrZqAGcIuGOrLohHKCGNSj8ywpcnCm2pfnjuTLQIDAQAB",
     "icons": {
         "16": "icons/icon16.png",
