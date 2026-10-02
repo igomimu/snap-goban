@@ -856,7 +856,7 @@ function App() {
 
             g.appendChild(circle);
 
-            if (stone.text) {
+            if (showNumbers && stone.text) {
                 const text = document.createElementNS(svgNS, 'text');
                 text.setAttribute('x', cx.toString());
                 text.setAttribute('y', cy.toString());
@@ -872,7 +872,7 @@ function App() {
 
             svgRoot.appendChild(g);
         });
-    }, []);
+    }, [showNumbers]);
 
 
 
@@ -1470,7 +1470,7 @@ function App() {
 
         // Draw Special Labels (Collision Markers) on Board
         // This ensures 'A', 'B' etc. appear on top of stones.
-        if (specialLabels.length > 0) {
+        if (showNumbers && specialLabels.length > 0) {
             specialLabels.forEach(sl => {
                 if (sl.x < minX || sl.x > maxX || sl.y < minY || sl.y > maxY) return;
 
@@ -1522,7 +1522,7 @@ function App() {
         const bgColor = isMonochrome ? '#FEFEFE' : '#DCB35D';
 
         // ... Existing Footer Logic ...
-        if (hiddenMoves.length > 0) {
+        if (showNumbers && hiddenMoves.length > 0) {
             // ... existing checks ...
 
             // 1. Create a "Cover Rect" to hide any board content below maxY
@@ -1719,7 +1719,7 @@ function App() {
         // --- OVERLAY: Draw Collision Bases on Board ---
         // Iterate collisionOverlays and draw them on top of the board content
         // coordinates are 1-based board coordinates
-        if (stonesToDraw.length > 0) {
+        if (showNumbers && stonesToDraw.length > 0) {
             const stoneGroup = document.createElementNS(svgNS, 'g');
             stoneGroup.setAttribute('id', 'collision-overlays');
             clone.appendChild(stoneGroup); // Append to end to be on top
@@ -1783,7 +1783,7 @@ function App() {
         } else {
             await exportToPng(clone, { scale: 3, backgroundColor: bgColor, destination: destination, filename });
         }
-    }, [appendCapturedStonesForExport, hiddenMoves, showCoordinates, showCapturedInExport, isMonochrome, specialLabels, boardSize, svgRef]);
+    }, [appendCapturedStonesForExport, hiddenMoves, showCoordinates, showCapturedInExport, isMonochrome, specialLabels, boardSize, svgRef, showNumbers]);
 
 
     const handleExport = useCallback(async (forcedMode?: 'SVG' | 'PNG', destination?: 'CLIPBOARD' | 'DOWNLOAD') => {
@@ -1803,9 +1803,11 @@ function App() {
         };
 
         // Auto-Enable Figure Mode (Show Label A) for Export
-        setIsFigureMode(true);
-        // Wait for React Render (Important for visual updates like Labels)
-        await new Promise(r => setTimeout(r, 100));
+        if (showNumbers) {
+            setIsFigureMode(true);
+            // Wait for React Render (Important for visual updates like Labels)
+            await new Promise(r => setTimeout(r, 100));
+        }
 
         try {
             // MERGE: Captured Stones + Collision Restored Stones (for "Leave 5")
@@ -1819,10 +1821,12 @@ function App() {
             console.error("Export Error:", err);
             showToast(t('alert.exportError'), 'error');
         } finally {
-            setIsFigureMode(false);
+            if (showNumbers) {
+                setIsFigureMode(false);
+            }
         }
 
-    }, [boardSize, exportMode, getRestoredStones, performExport]);
+    }, [boardSize, exportMode, getRestoredStones, performExport, showNumbers]);
 
     const handleExportGif = useCallback(async () => {
         if (!svgRef.current) return;
@@ -1950,8 +1954,10 @@ function App() {
         const y2 = Math.max(selectionStart.y, selectionEnd.y);
 
         try {
-            setIsFigureMode(true);
-            await new Promise(r => setTimeout(r, 50));
+            if (showNumbers) {
+                setIsFigureMode(true);
+                await new Promise(r => setTimeout(r, 50));
+            }
             const captured = getRestoredStones(); // Always included
             const restored = captured;
             await performExport({ minX: x1, maxX: x2, minY: y1, maxY: y2 }, restored, { mode: exportMode });
@@ -1959,7 +1965,9 @@ function App() {
             console.error(e);
             showToast(t('alert.exportError'), 'error');
         } finally {
-            setIsFigureMode(false);
+            if (showNumbers) {
+                setIsFigureMode(false);
+            }
         }
 
         // Reset Selection
@@ -1968,7 +1976,7 @@ function App() {
         setSelectionEnd(null);
         setDragMode('SELECTING');
         setMoveSource(null);
-    }, [selectionStart, selectionEnd, getBounds, getRestoredStones, showCapturedInExport, performExport, exportMode, setIsFigureMode]);
+    }, [selectionStart, selectionEnd, getBounds, getRestoredStones, showCapturedInExport, performExport, exportMode, setIsFigureMode, showNumbers]);
 
 
 
