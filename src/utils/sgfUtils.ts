@@ -370,16 +370,19 @@ export function parseSGFTree(sgfContent: string): ParsedSGFTree {
         }
     };
 
-    // Parse AB/AW from root node
-    const abMatch = sgfContent.match(/AB((?:\[[a-zA-Z]{2}\])+)/);
-    if (abMatch) {
-        const coords = abMatch[1].match(/\[([a-zA-Z]{2})\]/g) || [];
-        coords.forEach(c => place(c.slice(1, 3), 'BLACK'));
-    }
-    const awMatch = sgfContent.match(/AW((?:\[[a-zA-Z]{2}\])+)/);
-    if (awMatch) {
-        const coords = awMatch[1].match(/\[([a-zA-Z]{2})\]/g) || [];
-        coords.forEach(c => place(c.slice(1, 3), 'WHITE'));
+    // Read only the root node. Bracketed values may contain escaped brackets
+    // or tree delimiters, so those must not terminate the root properties.
+    const rootMatch = sgfContent.match(/\(\s*;((?:\[(?:\\[\s\S]|[^\\\]])*\]|[^;()[\]])*)/);
+    const rootProperties = rootMatch?.[1] || '';
+    // Consume every property (including comments), then inspect AB/AW values.
+    // MultiGo wraps value lists across lines and may repeat AB in the root.
+    const propertyRegex = /([A-Z]+)\s*((?:\[(?:\\[\s\S]|[^\\\]])*\]\s*)+)/g;
+    for (const property of rootProperties.matchAll(propertyRegex)) {
+        if (property[1] !== 'AB' && property[1] !== 'AW') continue;
+        const color = property[1] === 'AB' ? 'BLACK' : 'WHITE';
+        for (const point of property[2].matchAll(/\[([a-zA-Z]{2})\]/g)) {
+            place(point[1], color);
+        }
     }
 
     // 4. Parse tree structure
@@ -468,20 +471,8 @@ export function parseSGFTree(sgfContent: string): ParsedSGFTree {
         return { node, endPos: pos };
     }
 
-    // Parse from after the first (
-    let parsePos = startIdx + 1;
-
-    // Skip the root node properties (;GM[1]FF[4]SZ[19]...)
-    while (parsePos < sgfContent.length && sgfContent[parsePos] !== ';') parsePos++;
-    if (parsePos < sgfContent.length) parsePos++; // Skip first ;
-
-    // Skip root properties
-    while (parsePos < sgfContent.length &&
-        sgfContent[parsePos] !== ';' &&
-        sgfContent[parsePos] !== '(' &&
-        sgfContent[parsePos] !== ')') {
-        parsePos++;
-    }
+    // Continue after the same root section used for initial setup.
+    let parsePos = rootMatch ? rootMatch.index! + rootMatch[0].length : sgfContent.length;
 
     // Now parse the moves
     while (parsePos < sgfContent.length && sgfContent[parsePos] !== ')') {
