@@ -234,12 +234,43 @@ export async function svgToPngBlob(svgElement: SVGSVGElement, width: number, hei
  * 画面用の non-scaling-stroke は Word で縮小されると線が極端に細くなるので外し、太さを図の単位（1路=40）で決める。
  */
 function styleForWord(svg: SVGSVGElement, monochrome: boolean): void {
+    // 貼ったときの大きさを GoWrite と同じ 1路=4.2mm に（px のままだと Word では1路が約10.6mm になる）
+    for (const attr of ['width', 'height']) {
+        const px = parseFloat(svg.getAttribute(attr) || '0');
+        if (px > 0) svg.setAttribute(attr, `${(px / 40 * 4.2).toFixed(2)}mm`);
+    }
+    // 画面用の style（背景色・縦横比）は Word では不要
+    svg.removeAttribute('style');
     svg.querySelectorAll('[vector-effect]').forEach(el => el.removeAttribute('vector-effect'));
-    svg.querySelectorAll('line[data-grid]').forEach(el =>
-        el.setAttribute('stroke-width', el.getAttribute('data-grid') === 'border' ? '5' : '1.6'));
+    // 太さは GoWrite の EMF の実測（罫線・石の縁 0.09mm、盤端 0.31mm）を 1路=4.2mm=40 で換算。
+    // Word は SVG の線(stroke)を約0.3mmより細く描かないので、線は細長い四角、石の縁は円の重ねで描く
+    const NS = 'http://www.w3.org/2000/svg';
+    svg.querySelectorAll('line[data-grid]').forEach(el => {
+        const w = el.getAttribute('data-grid') === 'border' ? 2.95 : 0.86;
+        const [x1, y1, x2, y2] = ['x1', 'y1', 'x2', 'y2'].map(a => parseFloat(el.getAttribute(a) || '0'));
+        const rect = document.createElementNS(NS, 'rect');
+        // 端は square キャップと同じく太さの半分だけ伸ばす
+        rect.setAttribute('x', String(Math.min(x1, x2) - w / 2));
+        rect.setAttribute('y', String(Math.min(y1, y2) - w / 2));
+        rect.setAttribute('width', String(Math.abs(x2 - x1) + w));
+        rect.setAttribute('height', String(Math.abs(y2 - y1) + w));
+        rect.setAttribute('fill', el.getAttribute('stroke') || '#000001');
+        el.replaceWith(rect);
+    });
     // 石は GoWrite と同じく隣と接する大きさに（画面は1路の0.92のまま）。凡例の石も同じ半径で描いている
     svg.querySelectorAll('circle').forEach(el => {
-        if (Math.abs(parseFloat(el.getAttribute('r') || '0') - 18.4) < 0.01) el.setAttribute('r', '19.5');
+        if (Math.abs(parseFloat(el.getAttribute('r') || '0') - 18.4) >= 0.01) return;
+        const fill = el.getAttribute('fill') || '#000001';
+        el.setAttribute('r', '19.5');
+        el.setAttribute('fill', '#000001');
+        el.setAttribute('stroke', 'none');
+        el.removeAttribute('stroke-width');
+        if (fill.toLowerCase() !== '#000001' && fill.toLowerCase() !== '#000000') {
+            const inner = el.cloneNode() as Element;
+            inner.setAttribute('r', String(19.5 - 0.86));
+            inner.setAttribute('fill', fill);
+            el.after(inner);
+        }
     });
     // 石の中の数字は GoWrite と同じく細字
     svg.querySelectorAll('text').forEach(el => {
