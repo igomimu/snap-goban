@@ -30,3 +30,17 @@
 - Chromiumの独立した検証用プロファイルで実際にdistを拡張機能として読み込み、ファイル選択から黒64・白48、v3.0.15、実行時エラーなしを確認。
 - 原本77.sgfのSHA256は作業前後で同一。既存の番号再開始機能などの未コミット変更は今回のcommitに含めない。
 - `scripts/update_extension.ps1`を実行し、manifestと画面のバージョンを3.0.15へ更新。利用中ブラウザでの拡張機能再読み込みは未確認。
+
+# 2026-10-30 Wordに貼って保存すると盤が黒くなる（白黒反転）
+
+- [x] 三村さんのWordファイルから原因を特定（クリック用 `fill="transparent"` の rect 81個が保存時に #000000 へ）
+- [x] クリック用 rect を書き出しから除外＋書き出し時の transparent を none に
+- [x] 修正前後のSVGをLEGIONのWordで 挿入→保存→開き直し→PDF 比較
+- [x] v3.0.16 で commit/push、ストア提出用zipをDriveへ
+
+## Review（2026-10-30・LEGION）
+
+- 再現: SGF(9路)を貼り付け→Ctrl+F(SVG)。修正前のSVGは transparent の rect 81個、修正後は0個
+- Word(Microsoft 365 16.0.20527)で修正前は盤全体が黒く覆われ白石だけが見える／修正後は正常
+- commit `c6e07fc`。zip: Drive `Snap_Goban_v3.0.16.zip`（id 13UjThGco4QYo8ST40zMK-Bfs8KbihSxQ）
+- 残り: Chrome Web Storeへの提出（三村さん）。YOGAProのWordでの確認
