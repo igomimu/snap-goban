@@ -234,15 +234,16 @@ export async function svgToPngBlob(svgElement: SVGSVGElement, width: number, hei
  * 画面用の non-scaling-stroke は Word で縮小されると線が極端に細くなるので外し、太さを図の単位（1路=40）で決める。
  */
 function styleForWord(svg: SVGSVGElement, monochrome: boolean): void {
-    // 貼ったときの大きさを GoWrite と同じ 1路=4.2mm に（px のままだと Word では1路が約10.6mm になる）
+    // 貼ったときの大きさを GoWrite を Word に貼ったときと同じ 1路=3.9mm に（px のままだと1路が約10.6mm になる）。
+    // GoWrite の EMF 自体は1路4.2mmで描かれているが、Word は約93%（43.3mm幅→40.2mm）で貼る（三村さんの YOGAPro で実測）
     for (const attr of ['width', 'height']) {
         const px = parseFloat(svg.getAttribute(attr) || '0');
-        if (px > 0) svg.setAttribute(attr, `${(px / 40 * 4.2).toFixed(2)}mm`);
+        if (px > 0) svg.setAttribute(attr, `${(px / 40 * 3.9).toFixed(2)}mm`);
     }
     // 画面用の style（背景色・縦横比）は Word では不要
     svg.removeAttribute('style');
     svg.querySelectorAll('[vector-effect]').forEach(el => el.removeAttribute('vector-effect'));
-    // 太さは GoWrite の EMF の実測（罫線・石の縁 0.09mm、盤端 0.31mm）を 1路=4.2mm=40 で換算。
+    // 太さは GoWrite の EMF の実測（罫線・石の縁 0.09mm、盤端 0.31mm、1路4.2mm）を 1路=40 で換算。
     // Word は SVG の線(stroke)を約0.3mmより細く描かないので、線は細長い四角、石の縁は円の重ねで描く
     const NS = 'http://www.w3.org/2000/svg';
     svg.querySelectorAll('line[data-grid]').forEach(el => {
@@ -337,37 +338,6 @@ export async function exportToSvg(svgElement: SVGSVGElement, options: { backgrou
     }
 }
 
-/**
- * Exports an SVG element to EMF format via Inkscape (Desktop Version Only)
- */
-export async function exportToEmf(svgElement: SVGSVGElement, options: { backgroundColor?: string, destination?: 'CLIPBOARD' | 'DOWNLOAD', filename?: string } = {}): Promise<void> {
-    const { backgroundColor, destination = 'DOWNLOAD', filename = 'output.emf' } = options;
-
-    const clone = prepareSvgForExport(svgElement, { backgroundColor });
-    const serializer = new XMLSerializer();
-    const svgString = serializer.serializeToString(clone);
-
-    // Check if we are in Electron and the and the API is exposed
-    const electron = (window as any).electron;
-    if (electron && electron.exportToEmf) {
-        try {
-            const mode = destination === 'CLIPBOARD' ? 'clipboard' : 'file';
-            const result = await electron.exportToEmf(svgString, { filename, mode });
-            if (result.success) {
-                console.log('EMF Export successful');
-            } else {
-                if (result.error !== 'User cancelled') {
-                    alert('EMF Export failed: ' + result.error);
-                }
-            }
-        } catch (error: any) {
-            console.error('EMF Export error:', error);
-            alert('EMF Export failed: ' + error.message);
-        }
-    } else {
-        alert('EMF Export is only supported in the desktop version (Snap Goban Desktop).');
-    }
-}
 
 
 

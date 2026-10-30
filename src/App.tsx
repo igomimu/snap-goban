@@ -4,7 +4,7 @@ import GoBoard, { ViewRange, BoardState, StoneColor, Marker, Stone } from './com
 import GameInfoModal from './components/GameInfoModal'
 import PrintSettingsModal, { PrintSettings } from './components/PrintSettingsModal'
 import GlobalTooltip from './components/Tooltip'
-import { exportToPng, exportToSvg, exportToEmf, prepareSvgForExport, svgToPngBlob } from './utils/exportUtils'
+import { exportToPng, exportToSvg, prepareSvgForExport, svgToPngBlob } from './utils/exportUtils'
 import { createGifFromImages } from './utils/gifExportUtils'
 import { checkCaptures } from './utils/gameLogic'
 import { saveLastDirHandle, loadLastDirHandle } from './utils/lastDirStore'
@@ -104,8 +104,9 @@ function App() {
     const [isMonochrome, setIsMonochrome] = useState(() => {
         try { return localStorage.getItem('gorw_is_monochrome') === 'true'; } catch { return false; }
     });
-    const [exportMode, setExportMode] = useState<'SVG' | 'PNG' | 'EMF'>(() => {
-        try { const saved = localStorage.getItem('gorw_export_mode'); return (saved === 'SVG' || saved === 'PNG' || saved === 'EMF') ? (saved as any) : 'SVG'; } catch { return 'SVG'; }
+    // EMF モードはデスクトップ版専用の未完成機能だったので廃止（Word へは SVG でそのまま貼れる）。保存値が EMF なら SVG に
+    const [exportMode, setExportMode] = useState<'SVG' | 'PNG'>(() => {
+        try { const saved = localStorage.getItem('gorw_export_mode'); return saved === 'PNG' ? 'PNG' : 'SVG'; } catch { return 'SVG'; }
     });
 
     const [showCapturedInExport, setShowCapturedInExport] = useState(true);
@@ -1385,7 +1386,7 @@ function App() {
 
 
 
-    const performExport = useCallback(async (bounds: { minX: number, maxX: number, minY: number, maxY: number }, restoredStones: { x: number, y: number, color: StoneColor, text: string }[] = [], options: { mode: 'SVG' | 'PNG' | 'EMF', destination?: 'CLIPBOARD' | 'DOWNLOAD', filename?: string }) => {
+    const performExport = useCallback(async (bounds: { minX: number, maxX: number, minY: number, maxY: number }, restoredStones: { x: number, y: number, color: StoneColor, text: string }[] = [], options: { mode: 'SVG' | 'PNG', destination?: 'CLIPBOARD' | 'DOWNLOAD', filename?: string }) => {
         if (!svgRef.current) return;
 
         const { mode, destination = 'CLIPBOARD', filename } = options;
@@ -1681,8 +1682,6 @@ function App() {
 
         if (mode === 'SVG') {
             await exportToSvg(clone, { backgroundColor: bgColor, destination: destination, filename: filename });
-        } else if (mode === 'EMF') {
-            await exportToEmf(clone, { backgroundColor: bgColor, destination: destination, filename: filename });
         } else {
             await exportToPng(clone, { scale: 3, backgroundColor: bgColor, destination: destination, filename });
         }
@@ -2497,7 +2496,7 @@ function App() {
                             <button
                                 title={t('tooltip.toggleFormat')} aria-label={t('tooltip.toggleFormat')}
                                 onClick={() => {
-                                    const next = exportMode === 'SVG' ? 'PNG' : (exportMode === 'PNG' ? 'EMF' : 'SVG');
+                                    const next = exportMode === 'SVG' ? 'PNG' : 'SVG';
                                     setExportMode(next);
                                     localStorage.setItem('gorw_export_mode', next);
                                 }}

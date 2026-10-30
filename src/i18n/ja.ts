@@ -29,7 +29,7 @@ export const ja = {
     'tooltip.copyAs': '{format}としてコピー (クリックでコピー)',
     'tooltip.savePng': 'PNGとして保存...',
     'tooltip.exportGif': 'GIFアニメーションとして保存...',
-    'tooltip.toggleFormat': 'エクスポート形式を切り替え (SVG/PNG/EMF)',
+    'tooltip.toggleFormat': 'エクスポート形式を切り替え (SVG/PNG)',
 
     // Tooltips - System
     'tooltip.openNewTab': '新しいタブで開く (最大化)',
