@@ -45,3 +45,11 @@
 - commit `c6e07fc`。zip: Drive `Snap_Goban_v3.0.16.zip`（id 13UjThGco4QYo8ST40zMK-Bfs8KbihSxQ）
 - YOGAProの開発版で三村さんが確認: snap-gobanのSVGで貼った図（右上・手順番号と凡例入り）が保存→開き直しても黒く塗りつぶされない（2026-10-30）
 - 残り: Chrome Web Storeへの提出（三村さん）
+
+# 2026-10-30 WordへのSVGをGoWriteの見た目に（v3.0.17）
+
+- 三村さんがGoWriteの図と並べた比較: snap-gobanは盤端が細い・罫線が薄い・背景の薄い箱が見える
+- 書き出しで non-scaling-stroke を外し、罫線1.6・盤端5（1路=40）。白黒は背景なし、凡例の下の覆いは純白
+- LEGIONのWordで v3.0.16 と比較（凡例付き9路・保存→開き直し→PDF）。commit `103fb87`
+- zip: Drive `Snap_Goban_v3.0.17.zip`（v3.0.16のzipは使わない）
+- 残り: YOGAProの開発版でGoWriteと並べて確認 → ストア提出
