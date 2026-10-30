@@ -59,4 +59,12 @@
 - 中央寄せ・最後の線から約1.1路・石は盤上と同じ大きさ・角括弧は石と同じ高さの細字・数字は細字（Word向けSVG）
 - LEGIONのWordで凡例2項目の9路を 挿入→保存→開き直し→PDF で確認。commit `c079636`、zip: Drive `Snap_Goban_v3.0.18.zip`
 - v3.0.19: 三村さん決定でWord用SVGだけ石を隣と接する大きさ（半径19.5）に。画面は0.92のまま。zip: Drive `Snap_Goban_v3.0.19.zip`
+
+# 2026-10-30 Word用SVGの大きさと線をGoWriteの実測に（v3.0.20）
+
+- 三村さんの比較で snap-goban だけ約2.5倍の大きさ（幅106mm、GoWriteは43mm）
+- GoWriteのEMF実測: MM_HIMETRIC・1路420＝4.2mm、罫線と石の縁 0.09mm、盤端 0.31mm、石の直径 1路の0.98
+- 🔴 WordはSVGのstrokeを約0.3mmより細く描かない（1単位も3単位も0.296mm、10単位は1.058mmで正しい）。塗りつぶしは指定どおり（0.085mm）
+- 対策: 罫線は細長いrect、石の縁は黒円＋白円の重ね。大きさはmm指定
+- commit は v3.0.20。zip: Drive `Snap_Goban_v3.0.20.zip`
 - 残り: YOGAProの開発版でGoWriteと並べて確認 → ストア提出
