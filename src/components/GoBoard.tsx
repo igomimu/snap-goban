@@ -276,6 +276,8 @@ const GoBoard = forwardRef<SVGSVGElement, GoBoardProps>(({
                         width={CELL_SIZE}
                         height={CELL_SIZE}
                         fill="transparent"
+                        // Wordは保存時に transparent を黒に変える（盤が黒で覆われ白黒反転に見える）ので書き出しから除く
+                        data-export-ignore="true"
                         onMouseDown={(e) => {
                             e.preventDefault();
                             if (e.buttons === 1) onDragStart(x, y);

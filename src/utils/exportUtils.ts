@@ -22,6 +22,11 @@ function normalizeSvgColors(svgElement: SVGSVGElement): void {
             const value = el.getAttribute(attr);
             if (!value) return;
             const lower = value.toLowerCase().trim();
+            // Word は保存時に transparent を #000000 に変える
+            if (lower === 'transparent') {
+                el.setAttribute(attr, 'none');
+                return;
+            }
             if (lower === 'black' || lower === '#000' || lower === '#000000') {
                 el.setAttribute(attr, OFF_BLACK);
             } else if (lower === 'white' || lower === '#fff' || lower === '#ffffff') {
