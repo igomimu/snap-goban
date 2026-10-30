@@ -643,59 +643,9 @@ function App() {
     // Footer lists all moves at those locations as "MoveNum [ Label ]".
 
 
-    // Display Board Logic: when a cell has multiple stones in its history
-    // (collision), draw the *base* (earliest) stone instead of the latest
-    // one. Without this the legend references a number that isn't visible
-    // anywhere on the board.
-    const displayBoard = useMemo<BoardState>(() => {
-        if (!board || currentMoveIndex < 0) return board;
-
-        const cellHistory = new Map<string, { number: number; color: StoneColor }[]>();
-
-        // Setup stones — placement number 0
-        const initialBoard = history[0]?.board;
-        if (initialBoard) {
-            for (let y = 0; y < boardSize; y++) {
-                for (let x = 0; x < boardSize; x++) {
-                    const s = initialBoard[y]?.[x];
-                    if (s) {
-                        cellHistory.set(`${x},${y}`, [{ number: 0, color: s.color }]);
-                    }
-                }
-            }
-        }
-
-        // Diff successive board snapshots to detect placements
-        for (let i = 1; i <= currentMoveIndex; i++) {
-            const prevBoard = history[i - 1]?.board;
-            const currBoard = history[i]?.board;
-            if (!prevBoard || !currBoard) continue;
-            for (let y = 0; y < boardSize; y++) {
-                for (let x = 0; x < boardSize; x++) {
-                    const prevStone = prevBoard[y]?.[x];
-                    const currStone = currBoard[y]?.[x];
-                    if (currStone && (!prevStone || currStone.color !== prevStone.color)) {
-                        const key = `${x},${y}`;
-                        const list = cellHistory.get(key) ?? [];
-                        list.push({ number: currStone.number ?? -1, color: currStone.color });
-                        cellHistory.set(key, list);
-                    }
-                }
-            }
-        }
-
-        return board.map((row, y) =>
-            row.map((stone, x) => {
-                const list = cellHistory.get(`${x},${y}`);
-                if (!list || list.length < 2) return stone;
-                // Earliest numbered (>0) placement is the base.
-                const numbered = list.filter(m => m.number > 0).sort((a, b) => a.number - b.number);
-                if (numbered.length === 0) return stone;
-                const base = numbered[0];
-                return { ...(stone ?? {}), color: base.color, number: base.number };
-            })
-        );
-    }, [board, history, currentMoveIndex, boardSize]);
+    // 画面の碁盤は今ある石をそのまま見せる（抜き跡に打った9手目は「9」と表示）。
+    // Word・印刷の図では、同じ地点の最初の手（6）を stonesToDraw で上に描き、9手目は凡例「9[6]」にする。
+    const displayBoard = board;
 
     // Navigation Helpers (Tree Adapted)
     const stepBack = () => {
@@ -1678,6 +1628,10 @@ function App() {
 
                 const cx = MARGIN + (stone.x - 1) * CELL_SIZE;
                 const cy = MARGIN + (stone.y - 1) * CELL_SIZE;
+
+                // 画面の碁盤はこの地点に今の石（例: 9）の数字を描いている。数字は最後に最前面へ移されるので、
+                // 残すと上に描く最初の手（例: 6）と重なる
+                clone.querySelectorAll(`text.board-marker[x="${cx}"][y="${cy}"]`).forEach(t => t.remove());
 
                 const c = document.createElementNS(svgNS, 'circle');
                 c.setAttribute('cx', cx.toString());
