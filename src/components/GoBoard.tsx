@@ -201,6 +201,7 @@ const GoBoard = forwardRef<SVGSVGElement, GoBoardProps>(({
                 strokeWidth={width}
                 strokeLinecap="square"
                 className="grid-line"
+                data-grid={isBorder ? 'border' : 'line'}
                 shapeRendering="crispEdges"
                 vectorEffect="non-scaling-stroke"
             />
@@ -214,6 +215,7 @@ const GoBoard = forwardRef<SVGSVGElement, GoBoardProps>(({
                 strokeWidth={width}
                 strokeLinecap="square"
                 className="grid-line"
+                data-grid={isBorder ? 'border' : 'line'}
                 shapeRendering="crispEdges"
                 vectorEffect="non-scaling-stroke"
             />

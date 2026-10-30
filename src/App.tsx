@@ -1538,6 +1538,7 @@ function App() {
             coverRect.setAttribute('width', '99999'); // INCREASED: Cover full width generously
             coverRect.setAttribute('height', coverHeight.toString());
             coverRect.setAttribute('fill', bgColor);
+            coverRect.setAttribute('data-cover', 'true');
             clone.appendChild(coverRect);
 
             // ... Logic to create/clear footerGroup ...

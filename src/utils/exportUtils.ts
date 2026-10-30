@@ -65,8 +65,8 @@ function normalizeSvgColors(svgElement: SVGSVGElement): void {
  * Prepares an SVG element for export by cloning, cleaning, and applying necessary styles.
  * This ensures "Dark Mode hardening" and Word compatibility.
  */
-export function prepareSvgForExport(svgElement: SVGSVGElement, options: { backgroundColor?: string } = {}): SVGSVGElement {
-    const { backgroundColor = '#DCB35C' } = options;
+export function prepareSvgForExport(svgElement: SVGSVGElement, options: { backgroundColor?: string, omitBackground?: boolean } = {}): SVGSVGElement {
+    const { backgroundColor = '#DCB35C', omitBackground = false } = options;
 
     // 1. Clone the SVG to manipulate it without affecting the DOM
     const clone = svgElement.cloneNode(true) as SVGSVGElement;
@@ -130,7 +130,9 @@ export function prepareSvgForExport(svgElement: SVGSVGElement, options: { backgr
     clone.style.backgroundColor = finalBgColor;
 
     // Insert as first child to be behind all content
-    if (clone.firstChild) {
+    if (omitBackground) {
+        clone.style.backgroundColor = '';
+    } else if (clone.firstChild) {
         clone.insertBefore(bgRect, clone.firstChild);
     } else {
         clone.appendChild(bgRect);
@@ -228,6 +230,18 @@ export async function svgToPngBlob(svgElement: SVGSVGElement, width: number, hei
 
 
 /**
+ * Word に貼る SVG を GoWrite の見た目に寄せる。
+ * 画面用の non-scaling-stroke は Word で縮小されると線が極端に細くなるので外し、太さを図の単位（1路=40）で決める。
+ */
+function styleForWord(svg: SVGSVGElement, monochrome: boolean): void {
+    svg.querySelectorAll('[vector-effect]').forEach(el => el.removeAttribute('vector-effect'));
+    svg.querySelectorAll('line[data-grid]').forEach(el =>
+        el.setAttribute('stroke-width', el.getAttribute('data-grid') === 'border' ? '5' : '1.6'));
+    // 図より下を隠す覆いは、背景なしでは紙と同じ純白に（#FEFEFE だと薄い箱が見える）
+    if (monochrome) svg.querySelectorAll('rect[data-cover]').forEach(el => el.setAttribute('fill', '#FFFFFF'));
+}
+
+/**
  * Exports an SVG element to the system clipboard as SVG text.
  * Matches PNG behavior (Copy instead of Download).
  */
@@ -235,9 +249,12 @@ export async function exportToSvg(svgElement: SVGSVGElement, options: { backgrou
     // Default background is undefined (transparent)
     const { backgroundColor, destination = 'CLIPBOARD', filename = '' } = options;
 
-    const clone = prepareSvgForExport(svgElement, { backgroundColor });
+    // 白黒の図は GoWrite と同じく背景なし（Wordの紙にそのまま乗る）
+    const monochrome = !!backgroundColor && ['#fefefe', '#ffffff', 'white'].includes(backgroundColor.toLowerCase());
+    const clone = prepareSvgForExport(svgElement, { backgroundColor, omitBackground: monochrome });
     const width = parseFloat(clone.getAttribute('width') || '0');
     const height = parseFloat(clone.getAttribute('height') || '0');
+    styleForWord(clone, monochrome);
 
     const serializer = new XMLSerializer();
     const svgString = serializer.serializeToString(clone);
