@@ -17,4 +17,4 @@
 - SGF棋譜編集
 - Wordへ直接貼れる図（SVGをクリップボードへ。GoWriteと同じ見た目・1路3.9mm、v3.0.23〜）。EMFモードは廃止
 - i18n（日本語・英語・中国語）
-- Chrome Web Store公開済み
+- Chrome Web Store公開済み。🔴提出用zipは `npm run build && python3 scripts/package_store.py`（manifest の key は開発版ID固定用なのでストア用zipから外す。残すと拒否される）

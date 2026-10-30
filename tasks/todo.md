@@ -88,4 +88,6 @@
 - EMFモード（Electron専用・ブラウザでは英語の警告だけ）を廃止。SVG/PNGの切替のみ
 - zip: Drive `Snap_Goban_v3.0.23.zip`
 - 2026-10-30 三村さんが開発版v3.0.23で確認「完璧です」
-- 残り: Chrome Web Storeへ v3.0.23 を提出（三村さん）
+- 🔴 ストアが「key フィールドの値が現在のアイテムと一致していません」で拒否。manifest の key は開発版ID固定用（v3.0.13〜）
+- ストア用zipは `python3 scripts/package_store.py` で作る（keyだけ外す）。Drive `Snap_Goban_v3.0.23_store.zip`
+- 残り: Chrome Web Storeへ提出（三村さん）
