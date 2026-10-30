@@ -58,5 +58,5 @@
 - 手本: 三村さんの `今日の問題.docx`（同じ局面のGoWrite図とsnap-goban図）、GoWriteの解答図EMF（攻め合いの達人・勝利は細部に宿る）
 - 中央寄せ・最後の線から約1.1路・石は盤上と同じ大きさ・角括弧は石と同じ高さの細字・数字は細字（Word向けSVG）
 - LEGIONのWordで凡例2項目の9路を 挿入→保存→開き直し→PDF で確認。commit `c079636`、zip: Drive `Snap_Goban_v3.0.18.zip`
-- 残る違い: GoWriteの石は隣と接する大きさ（snap-gobanは1路の0.92）
+- v3.0.19: 三村さん決定でWord用SVGだけ石を隣と接する大きさ（半径19.5）に。画面は0.92のまま。zip: Drive `Snap_Goban_v3.0.19.zip`
 - 残り: YOGAProの開発版でGoWriteと並べて確認 → ストア提出
