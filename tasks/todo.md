@@ -91,3 +91,4 @@
 - 🔴 ストアが「key フィールドの値が現在のアイテムと一致していません」で拒否。manifest の key は開発版ID固定用（v3.0.13〜）
 - ストア用zipは `python3 scripts/package_store.py` で作る（keyだけ外す）。Drive `Snap_Goban_v3.0.23_store.zip`
 - 残り: Chrome Web Storeへ提出（三村さん）
+- 審査通過後: marketing-ai の LEGION ローカルブランチ `snap-goban-word-manual`（マニュアルにWord貼り付けを追記・未push）を master へマージして公開。ストア説明文はGoWrite短い版を三村さんに渡し済み
