@@ -43,5 +43,5 @@
 - 再現: SGF(9路)を貼り付け→Ctrl+F(SVG)。修正前のSVGは transparent の rect 81個、修正後は0個
 - Word(Microsoft 365 16.0.20527)で修正前は盤全体が黒く覆われ白石だけが見える／修正後は正常
 - commit `c6e07fc`。zip: Drive `Snap_Goban_v3.0.16.zip`（id 13UjThGco4QYo8ST40zMK-Bfs8KbihSxQ）
-- YOGAProの開発版で三村さんが確認: 4図をWordに貼り保存→開き直しても黒く塗りつぶされない（2026-10-30）
+- YOGAProの開発版で三村さんが確認: snap-gobanのSVGで貼った図（右上・手順番号と凡例入り）が保存→開き直しても黒く塗りつぶされない（2026-10-30）
 - 残り: Chrome Web Storeへの提出（三村さん）
