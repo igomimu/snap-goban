@@ -279,6 +279,19 @@ function styleForWord(svg: SVGSVGElement, monochrome: boolean): void {
     });
     // 図より下を隠す覆いは、背景なしでは紙と同じ純白に（#FEFEFE だと薄い箱が見える）
     if (monochrome) svg.querySelectorAll('rect[data-cover]').forEach(el => el.setAttribute('fill', '#FFFFFF'));
+    // Word は SVG の描かれた部分しかクリックを受けないので、紙と同じ純白の背景を敷いて図のどこでも選べるようにする
+    if (monochrome) {
+        const [x, y, w, h] = (svg.getAttribute('viewBox') || '').split(/\s+/).map(Number);
+        if ([x, y, w, h].every(Number.isFinite)) {
+            const bg = document.createElementNS(NS, 'rect');
+            bg.setAttribute('x', String(x));
+            bg.setAttribute('y', String(y));
+            bg.setAttribute('width', String(w));
+            bg.setAttribute('height', String(h));
+            bg.setAttribute('fill', '#FFFFFF');
+            svg.insertBefore(bg, svg.firstChild);
+        }
+    }
 }
 
 /**
