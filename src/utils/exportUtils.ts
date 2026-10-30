@@ -237,6 +237,11 @@ function styleForWord(svg: SVGSVGElement, monochrome: boolean): void {
     svg.querySelectorAll('[vector-effect]').forEach(el => el.removeAttribute('vector-effect'));
     svg.querySelectorAll('line[data-grid]').forEach(el =>
         el.setAttribute('stroke-width', el.getAttribute('data-grid') === 'border' ? '5' : '1.6'));
+    // 石の中の数字は GoWrite と同じく細字
+    svg.querySelectorAll('text').forEach(el => {
+        el.removeAttribute('font-weight');
+        (el as SVGElement).style.removeProperty('font-weight');
+    });
     // 図より下を隠す覆いは、背景なしでは紙と同じ純白に（#FEFEFE だと薄い箱が見える）
     if (monochrome) svg.querySelectorAll('rect[data-cover]').forEach(el => el.setAttribute('fill', '#FFFFFF'));
 }

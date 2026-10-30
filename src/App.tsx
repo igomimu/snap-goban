@@ -1556,161 +1556,109 @@ function App() {
                 footerGroup.removeChild(footerGroup.firstChild);
             }
 
-            // Relocate Footer to be visible in the cropped view
-            const startX = MARGIN + (minX - 1) * CELL_SIZE - CELL_SIZE / 2 + (showCoordinates ? -25 : 0) + 10;
+            // 凡例は GoWrite と同じく図の下の中央に、盤上と同じ大きさの石で並べる（例: ⑦［A］ ⑨［④］）
+            const R = 18.4;            // 盤上の石と同じ半径
+            const STONE_STEP = 2 * R + 2;
+            const BRACKET_W = 11;      // 角括弧の幅（font-size 40 の Arial）
+            const ITEM_GAP = 14;
+            const ROW_H = 2 * R + 10;
 
-            // UNIFIED CALCULATION: Bottom of the visual crop
-            // = Center of last row + half cell = edge of selection padding
             const cropBottomY = MARGIN + (maxY - 1) * CELL_SIZE + (CELL_SIZE / 2);
+            // 1行目の石の中心は最後の線から約1.1路下（GoWrite の実測）
+            const startY = cropBottomY + 24 + (showCoordinates ? 25 : 0);
+            const centerX = MARGIN + ((minX + maxX) / 2 - 1) * CELL_SIZE;
+            const maxRowWidth = (maxX - minX + 1) * CELL_SIZE;
 
-            // Gap of 40px from the cover line
-            const startY = cropBottomY + 40 + (showCoordinates ? 25 : 0);
+            const addStone = (g: Element, cx: number, color: string | undefined, text: string | undefined) => {
+                const c = document.createElementNS(svgNS, 'circle');
+                c.setAttribute('cx', cx.toString());
+                c.setAttribute('cy', '0');
+                c.setAttribute('r', R.toString());
+                c.setAttribute('fill', color === 'BLACK' ? '#000000' : '#FFFFFF');
+                c.setAttribute('stroke', '#000000');
+                c.setAttribute('stroke-width', '2');
+                g.appendChild(c);
+                const t = document.createElementNS(svgNS, 'text');
+                t.setAttribute('x', cx.toString());
+                t.setAttribute('y', '0');
+                t.setAttribute('dy', '.35em');
+                t.setAttribute('text-anchor', 'middle');
+                t.setAttribute('fill', color === 'BLACK' ? '#FFFFFF' : '#000000');
+                t.setAttribute('font-size', (text && text.length >= 3) ? '18' : '26');
+                t.setAttribute('font-family', 'Arial, sans-serif');
+                t.textContent = text ?? '';
+                g.appendChild(t);
+            };
+            const addBracket = (g: Element, cx: number, ch: string) => {
+                const t = document.createElementNS(svgNS, 'text');
+                t.setAttribute('x', cx.toString());
+                t.setAttribute('y', '0');
+                t.setAttribute('dy', '.26em'); // 角括弧の上下の中心を石の中心に
+                t.setAttribute('text-anchor', 'middle');
+                t.setAttribute('fill', '#000000');
+                t.setAttribute('font-size', '40');
+                t.setAttribute('font-family', 'Arial, sans-serif');
+                t.textContent = ch;
+                g.appendChild(t);
+            };
 
-            footerGroup.setAttribute('transform', `translate(${startX}, ${startY})`);
-
-            // Dynamic Flow Layout Logic for Export
-            const boardDisplayWidth = (maxX - minX + 1) * CELL_SIZE;
-
-            let cursorX = 0;
-            let cursorY = 0;
-            let maxRowY = 0;
-
+            // 1項目ずつ組み、行に詰める
+            const rows: { g: Element, w: number }[][] = [[]];
+            let rowW = 0;
             hiddenMoves.forEach((item) => {
-                // Layout: visStone1 visStone2 ... [ HiddenStone ]
-                // Sizes: Stone Ø36.8 (r=18.4).
-                // Per-stone advance: 35px (matches inline preview in GoBoard.tsx)
-
-                const visCount = item.left.length;
-                // Block width: vis stones (35 each) + bracket open + base stone + bracket close + padding
-                const blockWidth = 20 + visCount * 35 + 5 + 41.8 + 10 + 10;
-
-                // Wrap Check
-                if (cursorX + blockWidth > boardDisplayWidth && cursorX > 0) {
-                    cursorX = 0;
-                    cursorY += 55; // Row Height
-                }
-
-                // Create Group for this item
                 const itemG = document.createElementNS(svgNS, 'g');
-                itemG.setAttribute('transform', `translate(${cursorX}, ${cursorY})`);
-
-                // Advance cursor for next item
-                cursorX += blockWidth;
-
-                let drawX = 20; // Start X in group
-
-                // 1. Visible Stones (Left) — render all collision moves at this point
+                let drawX = 0;
                 item.left.forEach((visStone) => {
-                    const c = document.createElementNS(svgNS, 'circle');
-                    c.setAttribute('cx', drawX.toString());
-                    c.setAttribute('cy', '0');
-                    c.setAttribute('r', '18.4');
-                    c.setAttribute('fill', visStone.color === 'BLACK' ? '#000000' : '#FFFFFF');
-                    c.setAttribute('stroke', '#000000');
-                    c.setAttribute('stroke-width', visStone.color === 'BLACK' ? '2' : '0.7');
-                    itemG.appendChild(c);
-
-                    const t = document.createElementNS(svgNS, 'text');
-                    t.setAttribute('x', drawX.toString());
-                    t.setAttribute('y', '0');
-                    t.setAttribute('dy', '.35em');
-                    t.setAttribute('text-anchor', 'middle');
-                    t.setAttribute('fill', visStone.color === 'BLACK' ? '#FFFFFF' : '#000000');
-                    const fs = (visStone.text && visStone.text.length >= 3) ? '18' : '26';
-                    t.setAttribute('font-size', fs);
-                    t.setAttribute('font-family', 'Arial, sans-serif');
-                    t.setAttribute('font-weight', 'bold');
-                    t.textContent = visStone.text;
-                    itemG.appendChild(t);
-
-                    drawX += 35; // Advance past stone
+                    addStone(itemG, drawX + R, visStone.color, visStone.text);
+                    drawX += STONE_STEP;
                 });
-
-                // 2. Open Bracket
-                const openB = document.createElementNS(svgNS, 'text');
-                openB.setAttribute('x', drawX.toString());
-                openB.setAttribute('y', '0');
-                openB.setAttribute('dy', '.35em');
-                openB.setAttribute('text-anchor', 'middle');
-                openB.setAttribute('fill', '#000000');
-                openB.setAttribute('font-size', '24');
-                openB.setAttribute('font-weight', 'bold');
-                openB.textContent = "[";
-                itemG.appendChild(openB);
-
-                drawX += 5; // 括弧の直後に進む
-
-                // 3. Hidden Stone (Right)
-                // Right part of hiddenMoves is { text, color, isLabel }
+                addBracket(itemG, drawX + BRACKET_W / 2 - 2, '[');
+                drawX += BRACKET_W;
                 const hidStone = item.right;
                 if (hidStone) {
-                    // Check if it's a label (text only) or a stone
-                    // The goal image implies it's a stone if it has a number/color.
-
                     if (hidStone.isLabel && !hidStone.color) {
-                        // Fallback for純粋 text labels if color missing?
-                        // But our logic assigns color usually.
                         const t = document.createElementNS(svgNS, 'text');
-                        t.setAttribute('x', drawX.toString());
+                        t.setAttribute('x', (drawX + R).toString());
                         t.setAttribute('y', '0');
                         t.setAttribute('dy', '.35em');
-                        t.setAttribute('alignment-baseline', 'middle');
                         t.setAttribute('text-anchor', 'middle');
-                        t.setAttribute('font-size', '24');
+                        t.setAttribute('font-size', '26');
+                        t.setAttribute('font-family', 'Arial, sans-serif');
                         t.textContent = hidStone.text;
                         itemG.appendChild(t);
                     } else {
-                        // Draw Hidden Stone
-                        // 石の中心を括弧内の中央に配置するため、半径分を加算
-                        const stoneCenterX = drawX + 18.4;
-
-                        const c = document.createElementNS(svgNS, 'circle');
-                        c.setAttribute('cx', stoneCenterX.toString());
-                        c.setAttribute('cy', '0');
-                        c.setAttribute('r', '18.4');
-                        c.setAttribute('fill', (hidStone.color === 'BLACK') ? '#000000' : '#FFFFFF');
-                        c.setAttribute('stroke', '#000000');
-                        c.setAttribute('stroke-width', (hidStone.color === 'BLACK' ? '2' : '0.7'));
-                        itemG.appendChild(c);
-
-                        const t = document.createElementNS(svgNS, 'text');
-                        t.setAttribute('x', stoneCenterX.toString());
-                        t.setAttribute('y', '0');
-                        t.setAttribute('dy', '.35em');
-                        t.setAttribute('text-anchor', 'middle');
-                        t.setAttribute('fill', (hidStone.color === 'BLACK') ? '#FFFFFF' : '#000000');
-                        const fs = (hidStone.text && hidStone.text.length >= 3) ? '18' : '26';
-                        t.setAttribute('font-size', fs);
-                        t.setAttribute('font-family', 'Arial, sans-serif');
-                        t.setAttribute('font-weight', 'bold');
-                        t.textContent = hidStone.text;
-                        itemG.appendChild(t);
+                        addStone(itemG, drawX + R, hidStone.color, hidStone.text);
                     }
-                    drawX += 41.8; // 石の直径(36.8) + 隙間(5)
+                    drawX += 2 * R;
                 }
+                addBracket(itemG, drawX + BRACKET_W / 2 + 2, ']');
+                drawX += BRACKET_W;
 
-                // 4. Close Bracket
-                const closeB = document.createElementNS(svgNS, 'text');
-                closeB.setAttribute('x', drawX.toString());
-                closeB.setAttribute('y', '0');
-                closeB.setAttribute('dy', '.35em');
-                closeB.setAttribute('text-anchor', 'middle');
-                closeB.setAttribute('fill', '#000000');
-                closeB.setAttribute('font-size', '24');
-                closeB.setAttribute('font-weight', 'bold');
-                closeB.textContent = "]";
-                itemG.appendChild(closeB);
-
-                footerGroup.appendChild(itemG);
-
-                maxRowY = Math.max(maxRowY, cursorY); // Fixed: currentY -> cursorY
+                const row = rows[rows.length - 1];
+                if (row.length > 0 && rowW + ITEM_GAP + drawX > maxRowWidth) {
+                    rows.push([]);
+                    rowW = 0;
+                }
+                const cur = rows[rows.length - 1];
+                rowW += (cur.length > 0 ? ITEM_GAP : 0) + drawX;
+                cur.push({ g: itemG, w: drawX });
             });
 
-            const footerContentHeight = maxRowY + 60; // Increased Buffer
+            rows.forEach((row, ri) => {
+                const total = row.reduce((t, it) => t + it.w, 0) + ITEM_GAP * (row.length - 1);
+                let x = centerX - total / 2;
+                row.forEach(({ g, w }) => {
+                    g.setAttribute('transform', `translate(${x}, ${startY + ri * ROW_H})`);
+                    footerGroup!.appendChild(g);
+                    x += w + ITEM_GAP;
+                });
+            });
+            const maxRowY = (rows.length - 1) * ROW_H;
+
 
             // Robust Height Calculation
             const currentViewboxBottom = y + height;
-            const requiredBottom = startY + footerContentHeight + 10;
+            const requiredBottom = startY + maxRowY + R + 15;
 
             if (requiredBottom > currentViewboxBottom) {
                 height = requiredBottom - y;
@@ -1737,7 +1685,7 @@ function App() {
                 c.setAttribute('r', '18.4');
                 c.setAttribute('fill', stone.color === 'BLACK' ? '#000000' : '#FFFFFF');
                 c.setAttribute('stroke', '#000000');
-                c.setAttribute('stroke-width', stone.color === 'BLACK' ? '2' : '0.7');
+                c.setAttribute('stroke-width', '2');
                 stoneGroup.appendChild(c);
 
                 const t = document.createElementNS(svgNS, 'text');
