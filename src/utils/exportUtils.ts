@@ -237,6 +237,10 @@ function styleForWord(svg: SVGSVGElement, monochrome: boolean): void {
     svg.querySelectorAll('[vector-effect]').forEach(el => el.removeAttribute('vector-effect'));
     svg.querySelectorAll('line[data-grid]').forEach(el =>
         el.setAttribute('stroke-width', el.getAttribute('data-grid') === 'border' ? '5' : '1.6'));
+    // 石は GoWrite と同じく隣と接する大きさに（画面は1路の0.92のまま）。凡例の石も同じ半径で描いている
+    svg.querySelectorAll('circle').forEach(el => {
+        if (Math.abs(parseFloat(el.getAttribute('r') || '0') - 18.4) < 0.01) el.setAttribute('r', '19.5');
+    });
     // 石の中の数字は GoWrite と同じく細字
     svg.querySelectorAll('text').forEach(el => {
         el.removeAttribute('font-weight');
