@@ -74,4 +74,10 @@
 - displayBoard を今の盤面に戻した（ede234b の逆）。Word・印刷は stonesToDraw で最初の手を上描き＋凡例のまま
 - 上描き地点の画面の数字（board-marker）を除き、二重描きを防いだ
 - zip: Drive `Snap_Goban_v3.0.21.zip`
-- 残り: YOGAProの開発版でGoWriteと並べて確認 → ストア提出
+
+# 2026-10-30 Wordで図のどこでも選べるように（v3.0.22）
+
+- 三村さん指摘: GoWriteは図のどこでも十字カーソルで選べる。snap-gobanは石と罫線の上だけ
+- Word は SVG の描かれた部分しかクリックを受けない。白黒の背景をなくした v3.0.17 からの問題
+- 純白 #FFFFFF の背景を敷いた（#FEFEFE の薄い箱は出ない）。zip: Drive `Snap_Goban_v3.0.22.zip`
+- 残り: YOGAProで選べる範囲を確認 → ストア提出
